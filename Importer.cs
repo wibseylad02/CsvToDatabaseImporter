@@ -6,26 +6,35 @@ using System.Data;
 namespace CsvToDatabaseImporter
 {
     /// <summary>
-    /// This helper class provides methods to import CSV files into a SQL Server database.
+    /// Worker class for importing data from CSV or other delimited files into a SQL Server database.
     /// </summary>
-    internal static class Importer
+    public class Importer
     {
-        public static DataTable GetDataTableFromCSVFile(string csvFilePath)
+        public string[] Delimiters { get; set; } = new string[] { "," }; // Default delimiter for CSV files
+
+        /// <summary>
+        /// Gets a DataTable from a specified input file (e.g. CSV, TXT).
+        /// </summary>
+        /// <param name="inputFilePath">The path of the input file.</param>
+        /// <returns>A DataTable containing the data from the input file.</returns>
+        public DataTable GetDataTableFromInputFile(string inputFilePath)
         {
-            DataTable csvData = new DataTable();
+            DataTable? csvData = null;
             try
             {
-                using (TextFieldParser csvReader = new TextFieldParser(csvFilePath))
+                using (TextFieldParser csvReader = new TextFieldParser(inputFilePath))
                 {
-                    csvReader.SetDelimiters(new string[] { "," });
+                    csvReader.SetDelimiters(Delimiters);
                     csvReader.HasFieldsEnclosedInQuotes = false;
 
-                    string[] colFields = csvReader.ReadFields();
+                    var colFields = csvReader.ReadFields();
 
                     if (colFields == null || colFields.Length == 0)
                     {
-                        throw new Exception("CSV file is empty or not properly formatted.");
+                        throw new Exception("Data file to import is empty or not properly formatted.");
                     }
+
+                    csvData = new DataTable();
 
                     foreach (string column in colFields)
                     {
@@ -35,7 +44,7 @@ namespace CsvToDatabaseImporter
                     }
                     while (!csvReader.EndOfData)
                     {
-                        string[] fieldData = csvReader.ReadFields();
+                        var fieldData = csvReader.ReadFields();
 
                         //Mark empty value as null
                         for (int i = 0; i < fieldData.Length; i++)
@@ -49,12 +58,13 @@ namespace CsvToDatabaseImporter
                     }
                 }
             }
-            catch (Exception ex)
+            catch (Exception)
             {
-                MessageBox.Show("Error: " + ex.Message, "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                return null;
+                throw;
             }
+
             return csvData;
+
         }
 
         /// <summary>
@@ -62,8 +72,9 @@ namespace CsvToDatabaseImporter
         /// </summary>
         /// <param name="csvFileData">A <see cref="DataTable"/> created from parsing a .csv file</param>
         /// <param name="destinationTableName">The database table to write to</param>
-        public static void InsertDataIntoSQLServerUsingSQLBulkCopy(DataTable csvFileData, string destinationTableName)
+        public void InsertDataIntoDatabase(DataTable csvFileData, string destinationTableName)
         {
+            //ImporterHelper.InsertDataIntoSQLServerUsingSQLBulkCopy(csvFileData, destinationTableName);
             // This would typically be stored in a configuration file such as app.config or environment variable.
             var connectionString = ConfigurationManager.ConnectionStrings["VehiclesDb"].ToString();
 
@@ -89,7 +100,12 @@ namespace CsvToDatabaseImporter
             }
         }
 
-        public static string GetTargetDbNameFromFullFileName(string fullFileName)
+        /// <summary>
+        /// Gets the target database name from a full CSV (or other text file type) file path.
+        /// </summary>
+        /// <param name="fullFileName">The full path of the file.</param>
+        /// <returns>The target database name derived from the CSV or text file path.</returns>
+        public string GetTargetDbNameFromFullFileName(string fullFileName)
         {
             // Assuming the file name is in the format "TableName.csv"
             // This method extracts the table name from the file name
@@ -99,4 +115,3 @@ namespace CsvToDatabaseImporter
         }
     }
 }
-

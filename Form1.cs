@@ -1,4 +1,4 @@
-using System.Data;
+using CsvToDatabaseImporter.Interfaces;
 
 namespace CsvToDatabaseImporter
 {
@@ -7,6 +7,9 @@ namespace CsvToDatabaseImporter
         private const string DefaultFilePath = @"C:\AlphaGraphics\";
 
         private string _selectedFolderPath = "";
+
+        // TODO - Flag to control whether messages are shown to the user or logged instead.  Probably best set to true, since this is a GUI app, but review its usage
+        private bool _showMessages = true; // Flag to control whether messages are shown to the user or logged instead.  Probably best set to true, since this is a GUI app
 
         public CsvImporter()
         {
@@ -53,30 +56,17 @@ namespace CsvToDatabaseImporter
                 MessageBox.Show("Please select a folder first.", "Warning", MessageBoxButtons.OK, MessageBoxIcon.Warning);
                 return;
             }
+                
+            IImporterController importerController = new ImporterController(_selectedFolderPath);
+            importerController.ShowMessages = _showMessages; 
+            
             try
             {
-                var csvFiles = Directory.GetFiles(_selectedFolderPath, "*.csv");
-                if (csvFiles.Length == 0)
-                {
-                    MessageBox.Show("No CSV files found in the selected folder.", "Information", MessageBoxButtons.OK, MessageBoxIcon.Information);
-                    return;
-                }
-
-                foreach (var csvFile in csvFiles)
-                {
-                    DataTable csvData = Importer.GetDataTableFromCSVFile(csvFile);
-
-                    if (csvData != null && csvData.Rows.Count > 0)
-                    {
-                        // Assuming the table name is derived from the CSV file name without extension and minus the selected folder name
-                        Importer.InsertDataIntoSQLServerUsingSQLBulkCopy(csvData, Importer.GetTargetDbNameFromFullFileName(csvFile));
-                        MessageBox.Show($"Successfully imported {csvFile}", "Success", MessageBoxButtons.OK, MessageBoxIcon.Information);
-                    }
-                }
+                importerController.ImportCsvFiles(_selectedFolderPath);
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"An error occurred during import: {ex.Message}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                importerController.CreateMessageReporting(_showMessages).ShowMessage($"An error occurred during import: {ex.Message}", "Error"); // Ensure messages are shown
             }
         }        
     }
