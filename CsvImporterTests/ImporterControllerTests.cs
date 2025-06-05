@@ -37,11 +37,8 @@ namespace CsvImporterTests
             var databaseResults = _systemUnderTest.GetImportedDataTableFromInputFile("Vehicles.csv");
 
             // Assert
-            Assert.IsNotNull(databaseResults, "The DataTable should not be null after import.");
+            Assert.That(databaseResults, Is.Not.Null, "The DataTable should not be null after import.");
             Assert.That(databaseResults.TableName, Is.EqualTo("Vehicles"), "The DataTable should match the input name stem after import.");
-            // Here we would typically check the database to ensure the data was imported correctly.
-            // Since this is a mock, we will just verify that the method was called.
-            //_importerControllerMock.Verify(m => m.ImportCsvFiles(selectedFolderPath), Times.Once);
         }
     }
 }

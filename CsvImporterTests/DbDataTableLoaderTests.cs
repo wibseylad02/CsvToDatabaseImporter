@@ -29,7 +29,7 @@ namespace CsvImporterTests
             var dataTable = _systemUnderTest.GetSpecifiedDataTable(tableName);
             
             // Assert
-            Assert.IsNotNull(dataTable, "The DataTable should not be null after loading from the database.");
+            Assert.That(dataTable, Is.Not.Null, "The DataTable should not be null after loading from the database.");
             Assert.That(dataTable.TableName, Is.EqualTo(tableName), "The DataTable should match the specified table name.");
             Assert.That(dataTable.Rows.Count, hasRows ? Is.GreaterThan(0) : Is.EqualTo(0), "The DataTable should contain rows.");
         }

@@ -41,7 +41,8 @@ namespace CsvImporterTests
         public void GetDataTableFromInputFile_ExistingFile_Success()
         {
             // Arrange
-            var inputFilePath = DefaultFilePathRoot + "Vehicles.csv";
+            const string inputFileName = "Vehicles.csv";
+            var inputFilePath = DefaultFilePathRoot + inputFileName;
 
             if (!_systemUnderTest.CheckFileExists(inputFilePath))
             {
@@ -52,7 +53,7 @@ namespace CsvImporterTests
             DataTable actualDataTable = _systemUnderTest.GetDataTableFromInputFile(inputFilePath);
 
             // Assert
-            Assert.IsNotNull(actualDataTable);
+            Assert.That(actualDataTable, Is.Not.Null, $"DataTable derived from '{inputFileName}' should not be null");
             Assert.That(actualDataTable.Rows.Count, Is.GreaterThan(0));
             Assert.That(actualDataTable.Columns.Count, Is.GreaterThan(0));
         }
@@ -89,7 +90,7 @@ namespace CsvImporterTests
             DataTable actualDataTable = _importerMock.Object.GetDataTableFromInputFile(inputFilePath);
 
             // Assert
-            Assert.IsNotNull(actualDataTable);
+            Assert.That(actualDataTable, Is.Not.Null, $"DataTable derived from '{nonExistentFile}' should not be null");
             Assert.That(actualDataTable.Rows.Count, Is.EqualTo(expectedDataTable.Rows.Count));
             Assert.That(actualDataTable.Columns.Count, Is.EqualTo(expectedDataTable.Columns.Count));
         }
