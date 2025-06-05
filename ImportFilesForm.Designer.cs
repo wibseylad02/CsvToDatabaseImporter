@@ -1,6 +1,6 @@
 ﻿namespace CsvToDatabaseImporter
 {
-    partial class CsvImporter
+    partial class ImportFilesForm
     {
         /// <summary>
         ///  Required designer variable.

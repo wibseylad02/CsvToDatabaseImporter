@@ -2,16 +2,16 @@ using CsvToDatabaseImporter.Interfaces;
 
 namespace CsvToDatabaseImporter
 {
-    public partial class CsvImporter : Form
+    public partial class ImportFilesForm : Form
     {
-        private const string DefaultFilePath = @"C:\AlphaGraphics\";
+        private const string DefaultFilePath = @"C:\AlphaGraphicsTechTest\";
 
         private string _selectedFolderPath = "";
 
         // TODO - Flag to control whether messages are shown to the user or logged instead.  Probably best set to true, since this is a GUI app, but review its usage
         private bool _showMessages = true; // Flag to control whether messages are shown to the user or logged instead.  Probably best set to true, since this is a GUI app
 
-        public CsvImporter()
+        public ImportFilesForm()
         {
             InitializeComponent();
         }
@@ -19,7 +19,9 @@ namespace CsvToDatabaseImporter
         private void CsvImporter_Load(object sender, EventArgs e)
         {
             btnImportFiles.Enabled = false;
-            btnShowData.Enabled = false;
+
+            // left as true during development, though ideally it would be false until the data had been imported into the database successfully
+            btnShowData.Enabled = true;     
 
             folderBrowserDialog1.RootFolder = Environment.SpecialFolder.MyComputer;
             folderBrowserDialog1.InitialDirectory = DefaultFilePath;
@@ -46,7 +48,9 @@ namespace CsvToDatabaseImporter
 
         private void btnShowData_Click(object sender, EventArgs e)
         {
-            // TODO: Implement logic to show data from the selected CSV files.
+            var displayDataForm = new DisplayDataForm();
+            displayDataForm.SelectedFolderPath = _selectedFolderPath; // Pass the selected folder path to the display form
+            displayDataForm.ShowDialog(); // Show the form modally to allow user interaction
         }
 
         private void btnImportFiles_Click(object sender, EventArgs e)
@@ -63,10 +67,11 @@ namespace CsvToDatabaseImporter
             try
             {
                 importerController.ImportCsvFiles(_selectedFolderPath);
+                btnShowData.Enabled = true; // Enable the button to show data after successful import
             }
             catch (Exception ex)
             {
-                importerController.CreateMessageReporting(_showMessages).ShowMessage($"An error occurred during import: {ex.Message}", "Error"); // Ensure messages are shown
+                importerController.CreateMessageReporting(_showMessages).ShowMessage($"An error occurred during import: {ex.Message}", "Error"); 
             }
         }        
     }

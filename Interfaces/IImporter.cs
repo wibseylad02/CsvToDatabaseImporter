@@ -4,7 +4,22 @@ namespace CsvToDatabaseImporter.Interfaces
 {
     public interface IImporter
     {
+        /// <summary>
+        /// Gets or sets the delimiters used for parsing CSV or other delimited files.
+        /// </summary>
         string[] Delimiters { get; set; }
+
+        /// <summary>
+        /// Gets the database connection string used for importing data.
+        /// </summary>
+        string DbConnectionString { get; }
+
+        /// <summary>
+        /// Checks if a file exists at the specified file path.
+        /// </summary>
+        /// <param name="filePath">The full path to the file</param>
+        /// <returns><see langword="true"/> if the file exists, otherwise <see langword="false"/></returns>
+        bool CheckFileExists(string filePath);
 
         /// <summary>
         /// Gets a DataTable from a specified input file (e.g. CSV, TXT).

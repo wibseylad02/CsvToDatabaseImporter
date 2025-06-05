@@ -1,4 +1,5 @@
-﻿using Microsoft.Data.SqlClient;
+﻿using CsvToDatabaseImporter.Interfaces;
+using Microsoft.Data.SqlClient;
 using Microsoft.VisualBasic.FileIO;
 using System.Configuration;
 using System.Data;
@@ -8,9 +9,15 @@ namespace CsvToDatabaseImporter
     /// <summary>
     /// Worker class for importing data from CSV or other delimited files into a SQL Server database.
     /// </summary>
-    public class Importer
+    public class Importer : IImporter
     {
         public string[] Delimiters { get; set; } = new string[] { "," }; // Default delimiter for CSV files
+        public string DbConnectionString { get ; private set; } = ""; // Default connection string, can be set externally when mocking
+
+        public bool CheckFileExists(string filePath)
+        {
+            return File.Exists(filePath);
+        }
 
         /// <summary>
         /// Gets a DataTable from a specified input file (e.g. CSV, TXT).
@@ -74,14 +81,13 @@ namespace CsvToDatabaseImporter
         /// <param name="destinationTableName">The database table to write to</param>
         public void InsertDataIntoDatabase(DataTable csvFileData, string destinationTableName)
         {
-            //ImporterHelper.InsertDataIntoSQLServerUsingSQLBulkCopy(csvFileData, destinationTableName);
-            // This would typically be stored in a configuration file such as app.config or environment variable.
-            var connectionString = ConfigurationManager.ConnectionStrings["VehiclesDb"].ToString();
+            // This would typically be stored in app.config or an environment variable.
+            DbConnectionString = ConfigurationManager.ConnectionStrings["VehiclesDb"].ToString();
 
-            //using (SqlConnection dbConnection = new SqlConnection("data source=DESKTOP-7CLD65E\\SQLEXPRESS;initial catalog=Vehicles;trusted_connection=true;"))
-            using (SqlConnection dbConnection = new SqlConnection(connectionString))
+            using (SqlConnection dbConnection = new SqlConnection(DbConnectionString))
             {
                 dbConnection.Open();
+
                 using (SqlBulkCopy s = new SqlBulkCopy(dbConnection))
                 {
                     s.DestinationTableName = destinationTableName;

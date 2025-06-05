@@ -1,9 +1,10 @@
 ﻿using CsvToDatabaseImporter.Interfaces;
+using System.Data;
 
 namespace CsvToDatabaseImporter
 {
     /// <summary>   
-    /// This class is responsible for importing CSV files into a database.
+    /// This class is responsible for importing CSV files into a database and reading from the database table created from them.
     /// </summary>    
     public class ImporterController : IImporterController
     {
@@ -103,11 +104,42 @@ namespace CsvToDatabaseImporter
             }
         }
 
+
+        // DEVELOPMENT NOTE: This method may break the Single Responsibility principle for this class, which is more to do with importing data,
+        // rather than verifying what has been imported onto the DB, and so may need to go in its own class.  But for now, pragmatism prevails over purism.
+
+        /// <summary>
+        /// Gets the DataTable with the name root of the specified input data file after import to the database.
+        /// </summary>
+        /// <param name="inputFile"></param>
+        /// <returns></returns>
+        public DataTable GetImportedDataTableFromInputFile(string inputFile)
+        {
+            var importer = CreateImporter();
+            var tableName = importer.GetTargetDbNameFromFullFileName(inputFile);
+
+            if (string.IsNullOrWhiteSpace(tableName))
+            {
+                throw new ArgumentException("The table name derived from the input file is null or empty.", nameof(inputFile));
+            }
+
+            var dataTable = CreateDataTableLoader().GetSpecifiedDataTable(tableName);
+
+            return dataTable;
+        }
+
         /// <summary>
         /// Creates an instance of an <see cref="IImporter"/> to handle the import process for a data file.
         /// </summary>
         /// <returns>A <see cref="IImporter"/> instance, with a comma as the default delimiter</returns>
-        public IImporter CreateImporter() => (IImporter)new Importer();
+        public IImporter CreateImporter() => new Importer();
+
+        /// <summary>
+        /// Creates an instance of a <see cref="IDbDataTableLoader"/> to handle loading DataTables from the database.
+        /// </summary>
+        /// <returns>A <see cref="IDbDataTableLoader"/> instance</returns>
+        public IDbDataTableLoader CreateDataTableLoader() => new DbDataTableLoader();
+
 
         /// <summary>
         /// Creates an instance of a <see cref="MessageReporting"/> to handle message reporting during the import process.
